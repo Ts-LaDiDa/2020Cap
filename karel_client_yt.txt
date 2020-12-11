@@ -1,0 +1,98 @@
+PROGRAM T2
+VAR
+    file_var : FILE
+    tmp_str : STRING[128]
+    num_o_drink: INTEGER
+    status : INTEGER
+    entry : INTEGER
+    loop1 : BOOLEAN
+    lpc: INTEGER
+    status2: INTEGER
+	oh_status: INTEGER
+	dc_con: STRING[126]
+	tmp_int : INTEGER
+	status3: INTEGER
+BEGIN
+	-- START UP RESET
+	CLOSE FILE file_var
+	MSG_DISCO('C4:', status)
+	--START UP SETTING
+	loop1 = TRUE
+	--tmp_int  = 1
+	tmp_str = 'CLIENT MESSAGE 1'
+	dc_con = 'disconnect         '
+	SET_FILE_ATR(file_var, ATR_IA)
+	SET_VAR(entry, '*SYSTEM*','$HOSTC_CFG[4].$SERVER_PORT',55555,status)
+	--CONNECTION 
+	WRITE('CONNECTION ESTABLISHING......',CR)
+	MSG_CONNECT('C4:',oh_status)
+	IF oh_status = 0 THEN
+		WRITE('[CONN]: Successful!',CR)
+		--CHANNEL CONNECTION
+		OPEN FILE file_var('rw','C4:')
+		status = IO_STATUS(file_var)
+		IF status = 0 THEN
+			WHILE loop1 = TRUE  DO
+				--FIRST CONNECTION CONFIRMATION
+				WRITE file_var(tmp_str::13)
+				WRITE('[TO SERVER]: ',tmp_str,CR)
+				FOR tmp_int = 1 TO 5 DO
+					--COMMUNICATION HANDLING
+					--WRITE('LOOP: ', tmp_int,CR)
+					IF tmp_int <>1 THEN
+						tmp_str =  'next drink'
+						WRITE file_var(tmp_str::13)
+					ENDIF
+					--done 
+					WRITE('[TO SERVER]: DONE...WAITING FOR ORDER...',CR)
+					--START TAKING THE NAME OF THE DRINK
+					READ file_var(tmp_str::19)
+					status = IO_STATUS(file_var)
+					--WRITE(status,CR)
+					WRITE(tmp_int,'[SERVER]:  ',tmp_str,CR)
+					--SET NAME TO STRING REGISTER
+					------------IF tmp_str<>dc_con THEN
+					SET_STR_REG(tmp_int,tmp_str,status2)
+					IF status2<>0 THEN
+						WRITE('[ERROR2]: ',status2,CR)
+					ENDIF
+						--START TAKING THE NUMBER OF SUCH DRINK
+					READ file_var(num_o_drink::1)
+						--WRITE('[SERVER]:  ',tmp_str,CR)
+					status = IO_STATUS(file_var)
+					WRITE('[STAT] READ NUMBER:  ',num_o_drink, CR)
+						--SET NAME TO INTEGER REGISTER
+					SET_INT_REG(tmp_int,num_o_drink,status3)
+					IF status3<>0 THEN
+						WRITE('[ERROR3]: ',status3, CR)
+					ENDIF
+						---WRITE(status3,CR)
+						--READ DRINK NAME AND NUMBER DONE
+					WRITE(tmp_int,'[RECEIPT] : ',num_o_drink, ' ', 'OF', ' ',tmp_str,CR)
+					------------ELSE
+						------------loop1 = FALSE
+						------------WRITE('[CLOSE]: SOCKET',CR)
+						------------CLOSE FILE file_var
+						------------WRITE('[CLOSE]: FILE',CR)
+						------------MSG_DISCO('C4:', status)
+						------------ABORT
+					------------ENDIF
+					IF tmp_int = 5 THEN
+						loop1 = FALSE
+						tmp_int = 10
+					ENDIF
+				ENDFOR
+			ENDWHILE
+			WRITE('[CLOSE]: FILE',CR)
+			CLOSE FILE file_var
+			MSG_DISCO('C4:', status)
+		ELSE
+		WRITE('[ERROR]: FANUC IO ERROR',status,CR)
+		ENDIF
+	ELSE
+		WRITE('[ERROR]: network error',oh_status,CR)
+		CLOSE FILE file_var
+		MSG_DISCO('C4:', status)
+	ENDIF
+	MSG_DISCO('C4:', status)
+END T2

@@ -12,4 +12,7 @@ for task distribution alg model:
 for aws data interface:
   awsgit
 
+for basic data exchange functions:
+  roboguide local: 1.OrderPy.py for constructed communication through socket to karel;2.s3_inter for aws s3 data exchange function
+
 All the development is still proceeding --2020.12.11

@@ -11,3 +11,5 @@ for task distribution alg model:
   
 for aws data interface:
   awsgit
+
+All the development is still proceeding --2020.12.11

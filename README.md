@@ -10,4 +10,4 @@ for task distribution alg model:
   task_schedule
   
 for aws data interface:
-  aws
+  awsgit
